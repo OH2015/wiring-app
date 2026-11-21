@@ -38,6 +38,29 @@ const colors=[['赤','#e54545','red'],['青','#2866dc','blue'],['黄','#f3d84c',
 $('previewOpen').onclick=()=>{renderPreview();$('previewOverlay').classList.add('open');document.body.classList.add('preview-mode')};
 $('previewClose').onclick=()=>{$('previewOverlay').classList.remove('open');document.body.classList.remove('preview-mode')};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('previewOverlay').classList.contains('open'))$('previewClose').click()});
-$('print').onclick=()=>window.print();refresh();paint();
+$('print').onclick=()=>{
+ const data={cols:+$('cols').value,numbering:$('numbering').value,pattern:$('pattern').value,pins};
+ const encoded=encodeURIComponent(JSON.stringify(data));
+ const url=new URL(location.href);url.hash='print='+encoded;
+ // A separate browser page lets iOS users access Safari's Share > Print action.
+ const opened=window.open(url.href,'_blank');
+ if(!opened){alert('印刷画面を開けませんでした。Safariでこのサイトを開いて印刷してください。')}
+};
+refresh();paint();
+if(location.hash.startsWith('#print=')){
+ try{
+  const data=JSON.parse(decodeURIComponent(location.hash.slice(7)));
+  if(Number.isInteger(data.cols)&&data.cols>=2&&data.cols<=16&&Array.isArray(data.pins)){
+   $('cols').value=String(data.cols);
+   $('numbering').value=data.numbering==='horizontal'?'horizontal':'vertical';
+   $('pattern').value=String(data.pattern||'');
+   pins=Array.from({length:32},(_,i)=>typeof data.pins[i]==='string'?data.pins[i]:'');
+   paint();
+   document.querySelector('.app').insertAdjacentHTML('afterbegin','<section class="panel no-print" id="printHelp"><strong>印刷用画面</strong><p class="hint">iPhoneではSafariの共有ボタンから「プリント」を選択してください。印刷ダイアログが開かない場合も、この画面をスクリーンショットして印刷できます。</p><button id="tryPrint" class="primary">印刷ダイアログを開く</button></section>');
+   $('tryPrint').onclick=()=>window.print();
+  }
+ }catch(e){console.warn('印刷データを読み込めませんでした',e)}
+}
+
 if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => console.warn('オフライン登録に失敗:',err))); }
 </script></body></html>
