@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wiring-color-memo-v3-pwa-23';
+const CACHE_NAME = 'wiring-color-memo-v3-pwa-24';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/table.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
